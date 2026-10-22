@@ -16,4 +16,4 @@ Texas Hold'em -harjoituspeli valmentajalla. Peli pyörii selaimessa, ja siinä p
 
     python3 build.py
 
-Testit: `node test.js`, `node tuttest.js`, `node stress.js`
+Testit: `node test.js`, `node tuttest.js`, `node stress.js`, selaintesti `node e2e.js $PWD/index.html` (vaatii puppeteer-core)
