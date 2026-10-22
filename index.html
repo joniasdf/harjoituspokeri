@@ -1,0 +1,382 @@
+<!DOCTYPE html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Texas Hold'em -harjoituspeli</title><style>*{box-sizing:border-box}html,body{overflow-x:hidden}a{color:#f5c542}body{margin:0;font-family:system-ui,Segoe UI,sans-serif;background:radial-gradient(circle at 50% 30%,#1c2533,#0b0f16);color:#e8edf3;min-height:100vh}
+header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 14px;background:#0d131c;border-bottom:1px solid #263244}
+.logo{font-weight:800;font-size:20px;color:#f5c542}.logo small{font-weight:400;font-size:12px;color:#8a99ad;margin-left:6px}
+.hctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px}select{background:#1a2333;color:#fff;border:1px solid #334;border-radius:6px;padding:3px}
+.hb{background:#1f2b3d;color:#e8edf3;border:1px solid #334a66;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:14px}.hb:hover{background:#2a3a52}
+.statbar{padding:6px 14px;font-size:13px;color:#aab6c6;background:#0f1620}
+main{display:grid;grid-template-columns:1fr 380px;gap:10px;padding:10px}body.noside main{grid-template-columns:1fr}body.noside aside{display:none}
+.tablearea{display:flex;flex-direction:column;min-width:0}
+.tablewrap{position:relative;width:100%;max-width:1000px;margin:30px auto 10px;aspect-ratio:2/1.05}
+.rail{position:absolute;inset:6% 4%;border-radius:50%/50%;background:linear-gradient(#5a3a22,#2e1c10);padding:18px;box-shadow:0 20px 50px #000a,inset 0 2px 4px #fff3}
+.felt{width:100%;height:100%;border-radius:50%/50%;background:radial-gradient(ellipse at 50% 40%,#2f8f5b,#145c39 60%,#0d3f27);box-shadow:inset 0 0 40px #000b;display:flex;align-items:center;justify-content:center;border:2px solid #0a2b1a}
+.center{text-align:center}#board{display:flex;gap:6px;justify-content:center}#pot{margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px;min-height:34px}
+.potl{background:#0008;padding:3px 12px;border-radius:12px;font-weight:700;font-size:14px}
+.card{width:52px;height:74px;border-radius:6px;background:linear-gradient(#fff,#f1f1f1);position:relative;box-shadow:0 2px 6px #0008;font-weight:800;flex:none}
+.card.red{color:#d32f2f}.card.blk{color:#1a1a1a}.ci{position:absolute;top:3px;left:5px;font-size:13px;line-height:13px;text-align:center}.ci.br{top:auto;left:auto;bottom:3px;right:5px;transform:rotate(180deg)}
+.cc{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px}
+.card.back{background:repeating-linear-gradient(45deg,#b71c1c 0 5px,#8e1414 5px 10px);border:3px solid #fff}
+.card.slot{background:#0003;box-shadow:none;border:2px dashed #fff3}
+.deal{animation:deal .45s ease-out}@keyframes deal{from{transform:translate(0,-60px) scale(.3) rotate(-20deg);opacity:0}}
+.flip{animation:flip .5s ease-out}@keyframes flip{from{transform:rotateY(90deg)}}
+#seats{position:absolute;inset:0;pointer-events:none}
+.seat{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;width:160px;pointer-events:auto;transition:opacity .3s}
+.seat .hole{display:flex;gap:3px;margin-bottom:-14px;z-index:1}.seat:not(.me) .card{width:40px;height:57px}.seat:not(.me) .cc{font-size:22px}
+.seat.folded .hole{opacity:.25}.seat.out{opacity:.35}
+.plate{position:relative;display:flex;align-items:center;gap:8px;background:linear-gradient(#26324a,#141b29);border:1px solid #3b4b66;border-radius:30px;padding:4px 14px 4px 4px;min-width:140px;box-shadow:0 4px 12px #0009;z-index:2}
+.seat.turn .plate{border-color:#f5c542;box-shadow:0 0 16px #f5c542aa}.seat.win .plate{border-color:#5f5;box-shadow:0 0 20px #5f5}
+.av{position:relative;width:38px;height:38px;border-radius:50%;background:var(--c);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:#fff;flex:none}
+.ring{position:absolute;inset:-4px;width:46px;height:46px;transform:rotate(-90deg)}.ring circle{fill:none;stroke:#f5c542;stroke-width:3;stroke-dasharray:113;animation:tick 15s linear forwards}@keyframes tick{to{stroke-dashoffset:113}}
+.nm{font-weight:700;font-size:13px;white-space:nowrap}.nm small{font-weight:400;color:#9fb0c8;font-size:10px}.ch{color:#f5c542;font-weight:700;font-size:14px}
+.btnD{position:absolute;right:-12px;top:-8px;background:#fff;color:#000;border-radius:50%;width:22px;height:22px;font-size:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 4px #000}
+.blind{position:absolute;left:-10px;top:-8px;background:#1976d2;color:#fff;border-radius:10px;padding:1px 5px;font-size:10px}.blind.bb{background:#f57c00}
+.ost{display:flex;gap:3px;margin-top:3px;flex-wrap:wrap;justify-content:center}.ost span{background:#0009;border:1px solid #445;border-radius:8px;padding:0 5px;font-size:10px;color:#cfe}.ost .lbl{color:#ffe08a}
+.la{font-size:11px;color:#dde;min-height:14px;text-shadow:0 1px 2px #000}
+.bet{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;gap:4px;pointer-events:none}
+.stack{position:relative;width:24px;height:30px}.stack i{position:absolute;left:0;width:24px;height:8px;border-radius:50%;border:2px dashed #fffa;box-shadow:0 1px 1px #000}
+.amt{background:#000a;border-radius:8px;padding:1px 6px;font-size:12px;font-weight:700}
+.actionbar{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;padding:6px}
+#controls{display:flex;flex-direction:column;gap:6px;align-items:flex-end;margin-left:auto}#controls.off{opacity:.35;pointer-events:none}
+.sizes{display:flex;gap:5px;align-items:center}.sizes button{background:#26324a;color:#fff;border:1px solid #3b4b66;border-radius:6px;padding:4px 8px;cursor:pointer}
+#amt{width:160px;accent-color:#f5c542}#amtN{width:80px;background:#141b29;color:#fff;border:1px solid #3b4b66;border-radius:6px;padding:4px}
+.acts{display:flex;gap:6px}.a{border:0;border-radius:10px;padding:12px 20px;font-size:16px;font-weight:700;color:#fff;cursor:pointer;min-width:100px;box-shadow:0 4px 0 #0006}
+.a:active{transform:translateY(2px)}.fold{background:linear-gradient(#e53935,#a51d1a)}.check{background:linear-gradient(#43a047,#2e7031)}.raise{background:linear-gradient(#fb8c00,#c25e00)}.allin{background:linear-gradient(#8e24aa,#5c1370)}.a:disabled{opacity:.4}
+.nextb{background:linear-gradient(#f5c542,#c99a12);color:#1a1a1a;border:0;border-radius:10px;padding:12px 18px;font-weight:800;cursor:pointer}.nextb:disabled{opacity:.3}
+aside{background:#111925;border:1px solid #263244;border-radius:12px;overflow:hidden;align-self:start;max-height:calc(100vh - 100px);display:flex;flex-direction:column}
+nav{display:flex}.tab{flex:1;background:#0d131c;color:#9fb0c8;border:0;border-bottom:2px solid transparent;padding:10px 4px;cursor:pointer;font-size:13px}.tab.on{color:#f5c542;border-bottom-color:#f5c542;background:#111925}
+.pane{padding:10px;overflow:auto;font-size:14px;line-height:1.45}#coach{min-height:60px}.sub{margin-top:8px;padding-top:8px;border-top:1px solid #fff2}
+#review div{margin:5px 0;padding:6px;border-radius:6px}.ok{background:#1b5e20aa;padding:6px;border-radius:6px}.bad{background:#7a4a00aa;padding:6px;border-radius:6px}
+#log{font-size:12px;color:#aab}details{background:#0d131c;border:1px solid #263244;border-radius:8px;padding:6px 10px;margin-bottom:8px}summary{cursor:pointer;font-weight:700;color:#f5c542}
+.modal{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:50}.mbox{position:relative;background:#141c29;border:1px solid #3b4b66;border-radius:14px;padding:18px 22px;width:min(640px,94vw);max-height:90vh;overflow:auto;line-height:1.5}
+.x{position:absolute;right:10px;top:10px;background:none;border:0;color:#fff;font-size:20px;cursor:pointer}.tbtn{display:inline-block;margin:6px 6px 0 0;background:#26324a;color:#fff;border:1px solid #3b4b66;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:15px}.tbtn:hover{background:#334a66}.prog{color:#8a99ad;font-size:12px}
+@media(max-width:1000px){main{grid-template-columns:1fr}aside{max-height:none}}
+@media(max-width:650px){.seat{width:110px}.plate{min-width:100px;padding-right:6px}.nm small,.ost{display:none}.card{width:38px;height:54px}.cc{font-size:20px}.seat:not(.me) .card{width:28px;height:40px}.seat:not(.me) .cc{font-size:15px}.a{min-width:70px;padding:10px}#amt{width:90px}.tablewrap{aspect-ratio:1/1}}
+.pbar{height:8px;background:#0006;border-radius:4px;overflow:hidden;margin:6px 0}.pbar i{display:block;height:100%;background:#f5c542}.tlist{padding-left:0;list-style:none}.tlist li.nxt .tbtn{border-color:#f5c542;box-shadow:0 0 8px #f5c54288}.tbtn.right{background:#2e7d32}.tbtn.wrong{background:#b71c1c}
+</style></head><body>
+<header><div class="logo">♠ Hold'em Trainer <small>vain pelimerkit</small></div>
+<div class="hctl"><label>Botit <select id="nb"><option>3</option><option selected>4</option><option>5</option></select></label>
+<label class="sw"><input type="checkbox" id="hints" checked> Näytä vihjeet</label>
+<label>Nopeus <select id="spd"><option value="1200">Hidas</option><option value="700" selected>Normaali</option><option value="250">Nopea</option></select></label>
+<button id="new" class="hb">Uusi sessio</button><button id="tutBtn" class="hb">🎓 Tutoriaalit</button><button id="togP" class="hb">☰ Paneeli</button></div></header>
+<div id="stats" class="statbar"></div>
+<main><section class="tablearea"><div class="tablewrap"><div class="rail"><div class="felt"><div class="center"><div id="board"></div><div id="pot"></div></div></div></div><div id="seats"></div></div>
+<div class="actionbar"><button id="next" class="nextb" disabled>Seuraava käsi ▶</button>
+<div id="controls" class="off"><div class="sizes"><button data-f="0.5">½ potti</button><button data-f="0.75">¾ potti</button><button data-f="1">Potti</button>
+<input type="range" id="amt"><input type="number" id="amtN"></div>
+<div class="acts"><button id="bFold" class="a fold">Luovuta</button><button id="bCheck" class="a check">Tarkista</button><button id="bRaise" class="a raise">Korota</button><button id="bAll" class="a allin">All-in</button></div></div></div></section>
+<aside id="side"><nav><button class="tab" data-t="coach">Valmentaja</button><button class="tab" data-t="review">Arvio</button><button class="tab" data-t="log">Loki</button><button class="tab" data-t="guide">Oppaat</button></nav>
+<div class="pane" id="p-coach"><div id="coach"><i>Valmentaja näyttää vinkit vuorollasi.</i></div></div><div class="pane" id="p-review"><div id="review"><i>Käden arvio näkyy käden jälkeen.</i></div></div>
+<div class="pane" id="p-log"><div id="log"></div></div><div class="pane" id="p-guide"><details><summary>Opas: equity</summary><p><b>Equity</b> on se osuus potista, jonka voitat keskimäärin, jos tilanne pelattaisiin loppuun lukemattomia kertoja. Tasapelissä potti jaetaan (kahden kesken puolet, kolmen kesken kolmannes).</p>
+<p><b>Miten peli laskee sen:</b> Monte Carlo -simulaatio jakaa vastustajille satunnaiset kädet ja loput pöytäkortit N kertaa (valmentaja 2000) ja laskee <i>(voitot + tasapelien osuudet) / N</i>.</p>
+<p><b>Arviointi pöydässä:</b> outsit × 4 flopilla, outsit × 2 turnilla. Muistisääntöjä preflop: pari vs. kaksi yliskorttia ~55/45 (esim. 77 vs AK), dominoitu käsi (AK vs AQ) ~70/30, iso pari vs. pienempi pari ~80/20, AA vs. satunnainen käsi ~85 %.</p>
+<p><b>Useampi vastustaja:</b> equity laskee nopeasti – AA on ~85 % yhtä, ~73 % kahta ja ~56 % neljää satunnaista kättä vastaan. "Reilu osuus" on 1/(vastustajat + 1).</p>
+<p><b>Equity vs. toteutunut equity:</b> laskettu equity olettaa, että käsi nähdään loppuun ilman lisäpanostuksia. Todellisuudessa joudut joskus luovuttamaan ennen riveriä tai saat lisää rahaa osuessasi. Huonossa asemassa ja spekulatiivisilla käsillä toteutunut equity jää usein alle lasketun.</p></details>
+<details><summary>Opas: pottikerroin</summary><p><b>Pottikerroin</b> kertoo, kuinka suuri osa lopullisesta potista sinun pitää maksaa. Kaava: <i>maksu / (potti + maksu)</i>. Esim. potti 100 (sis. vastustajan panos) ja maksu 50 → 50/150 = 33 % eli 2:1.</p><p>Vertaa tätä <b>equityysi</b> (todennäköisyys voittaa potti). Jos equity on suurempi kuin vaadittu prosentti, maksu on pitkällä aikavälillä voitollinen, vaikka häviäisit yksittäisen käden. Odotusarvo: <i>EV = equity × (potti + maksu) − maksu</i>. Esim. 40 % × 150 − 50 = +10 per maksu.</p></details>
+<details><summary>Opas: outsit sekä 2:n ja 4:n sääntö</summary><p><b>Outsit</b> ovat jäljellä olevia kortteja, jotka parantavat kätesi paremmaksi kategoriaksi (esim. väriveto: 9 outsia, avoin suoraveto: 8, pari→kolmoset: 2, kaksi yliskorttia: 6).</p><p><b>2:n ja 4:n sääntö:</b> flopilla outsit × 4 ≈ todennäköisyys osua riveriin mennessä, turnilla (tai vain seuraavaa korttia arvioidessa) outsit × 2 ≈ todennäköisyys osua riverillä. Esim. 9 outsia: flopilta ~36 % (tarkka 35 %), turnilta ~18 % (tarkka 19,6 %). Vertaa tätä pottikertoimeen: jos osumistodennäköisyys seuraavalla kortilla ylittää pottikertoimen, maksu kannattaa.</p><p>Huom: kaikki outsit eivät ole "puhtaita" – esim. värikortti, joka parittaa pöydän, voi antaa vastustajalle täyskäden.</p></details>
+<details><summary>Vastustajien pelityyli ja strategia</summary><p><b>VPIP</b> = kuinka usein pelaaja laittaa rahaa pottiin vapaaehtoisesti preflop (tiukka &lt; 24 %, löysä &gt; 38 %). <b>PFR</b> = kuinka usein hän korottaa preflop. <b>AF</b> (aggressiokerroin) = (panostukset + korotukset) / maksut; yli 2 = aggressiivinen, alle 1 = passiivinen. Tilastot päivittyvät session aikana; ennen 8 kättä valmentaja käyttää bottien tunnettua tyyliä.</p>
+<ul><li><b>Aggressiivinen:</b> maksa kevyemmin (hänen panoksissaan on bluffeja), ansoita vahvoilla käsillä antamalla hänen panostaa, älä bluffaa häntä.</li>
+<li><b>Tiukka:</b> kunnioita hänen korotuksiaan (vahva range), mutta varasta blindejä useammin – hän luovuttaa heikot kätensä.</li>
+<li><b>Löysä-passiivinen ("calling station"):</b> panosta arvosta ohuemmin (hän maksaa heikoilla käsillä), älä bluffaa koskaan.</li></ul></details></div></aside></main>
+<div id="tutM" class="modal"><div class="mbox"><button id="tutX" class="x">✕</button><div id="tutB"></div></div></div>
+<script>const RANKS='23456789TJQKA',SUITS='shdc',SUITSYM={s:'♠',h:'♥',d:'♦',c:'♣'};
+function newDeck(){const d=[];for(const s of SUITS)for(let r=0;r<13;r++)d.push({r:r+2,s});return d;}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function cardStr(c){return (c.r===10?'10':RANKS[c.r-2])+SUITSYM[c.s];}
+function parseCard(t){return {r:RANKS.indexOf(t[0].toUpperCase())+2,s:t[1]};}
+// 5-card eval -> comparable number
+function eval5(c){const rs=c.map(x=>x.r).sort((a,b)=>b-a);const fl=c.every(x=>x.s===c[0].s);
+ let u=[...new Set(rs)],st=0;if(u.length===5){if(rs[0]-rs[4]===4)st=rs[0];else if(rs[0]===14&&rs[1]===5)st=5;}
+ const cnt={};rs.forEach(r=>cnt[r]=(cnt[r]||0)+1);const g=Object.keys(cnt).map(Number).sort((a,b)=>cnt[b]-cnt[a]||b-a);const pat=g.map(r=>cnt[r]).join('');
+ let cat,k;if(st&&fl){cat=8;k=[st];}else if(pat==='41'){cat=7;k=g;}else if(pat==='32'){cat=6;k=g;}else if(fl){cat=5;k=rs;}else if(st){cat=4;k=[st];}
+ else if(pat==='311'){cat=3;k=g;}else if(pat==='221'){cat=2;k=g;}else if(pat==='2111'){cat=1;k=g;}else{cat=0;k=rs;}
+ let v=cat;for(let i=0;i<5;i++)v=v*15+(k[i]||0);return v;}
+function evalBest(cards){let best=-1;const n=cards.length;
+ for(let a=0;a<n;a++)for(let b=a+1;b<n;b++){const h=cards.filter((_,i)=>i!==a&&i!==b);if(n===7){const v=eval5(h);if(v>best)best=v;}}
+ if(n===5)return eval5(cards);if(n===6){for(let a=0;a<6;a++){const v=eval5(cards.filter((_,i)=>i!==a));if(v>best)best=v;}}return best;}
+const CATNAMES=['Hai kortti','Pari','Kaksi paria','Kolmoset','Suora','Väri','Täyskäsi','Neloset','Värisuora'];
+function catName(v){return CATNAMES[Math.floor(v/Math.pow(15,5))];}
+function equity(hole,board,nOpp,iters=1500){const used=new Set([...hole,...board].map(c=>c.r+c.s));const rest=newDeck().filter(c=>!used.has(c.r+c.s));let score=0,W=0,T=0;
+ for(let it=0;it<iters;it++){const d=rest.slice();const need=5-board.length+2*nOpp;for(let i=0;i<need;i++){const j=i+Math.floor(Math.random()*(d.length-i));[d[i],d[j]]=[d[j],d[i]];}
+  let p=0;const b=board.concat(d.slice(0,5-board.length));p=5-board.length;const me=evalBest(hole.concat(b));let best=0,ties=0,lose=false;
+  for(let o=0;o<nOpp;o++){const v=evalBest([d[p],d[p+1]].concat(b));p+=2;if(v>me){lose=true;break;}if(v===me)ties++;}
+  if(!lose){score+=1/(ties+1);if(ties)T++;else W++;}}
+ equity.last={wins:W,ties:T,n:iters,eq:score/iters};return score/iters;}
+// side pots: contributions [{id,amt,folded}] -> [{amount,eligible:[ids]}]
+function buildPots(players){const lv=[...new Set(players.filter(p=>p.totalBet>0).map(p=>p.totalBet))].sort((a,b)=>a-b);let prev=0;const pots=[];
+ for(const L of lv){let amt=0;players.forEach(p=>{amt+=Math.max(0,Math.min(p.totalBet,L)-prev);});const el=players.filter(p=>!p.folded&&p.totalBet>=L).map(p=>p.id);
+  if(amt>0){if(pots.length&&el.join()===pots[pots.length-1].eligible.join())pots[pots.length-1].amount+=amt;else pots.push({amount:amt,eligible:el});}prev=L;}
+ return pots;}
+// coach recommendation
+function coachAdvice(eq,toCall,pot,stack,bb,nOpp,street,minRaiseTo,curBet,myBet){
+ const potOdds=toCall>0?toCall/(pot+toCall):0;const strongTh=Math.min(0.85,1.6/(nOpp+1)+0.1);let a,amt=0,why;
+ const sizeBet=f=>Math.min(stack+myBet,Math.max(minRaiseTo,Math.round((curBet+ f*(pot+toCall))/bb)*bb||minRaiseTo));
+ if(toCall===0){if(eq>=strongTh){a=curBet>0?'raise':'bet';amt=sizeBet(0.66);why=`Equitysi ${pc(eq)} on vahva ${nOpp} vastustajaa vastaan – panosta arvosta (n. 2/3 potista).`;}
+  else if(eq>=1/(nOpp+1)+0.12&&street!=='preflop'){a='bet';amt=sizeBet(0.5);why=`Equity ${pc(eq)} on yli keskiarvon (${pc(1/(nOpp+1))}) – pieni arvopanos (1/2 potista).`;}
+  else{a='check';why=`Equity ${pc(eq)} ei riitä panostamiseen – tarkista ilmaiseksi.`;}}
+ else{if(eq>=strongTh&&stack>toCall){a='raise';amt=sizeBet(0.75);why=`Equity ${pc(eq)} selvästi yli pottikertoimien (${pc(potOdds)}) – korota arvosta.`;}
+  else if(eq>=potOdds+0.03){a='call';why=`Equity ${pc(eq)} > pottikertoimet ${pc(potOdds)} – maksu on kannattava.`;}
+  else{a='fold';why=`Equity ${pc(eq)} < pottikertoimet ${pc(potOdds)} – maksu on pitkällä aikavälillä tappiollinen, luovuta.`;}}
+ if((a==='bet'||a==='raise')&&amt>=stack+myBet){a='allin';amt=stack+myBet;}
+ return {action:a,amount:amt,potOdds,why};}
+function pc(x){return Math.round(x*100)+'%';}
+if(typeof module!=='undefined')module.exports={eval5,evalBest,parseCard,equity,buildPots,coachAdvice,catName};
+function catOf(cards){if(cards.length>=5)return Math.floor(evalBest(cards)/Math.pow(15,5));const c={};cards.forEach(x=>c[x.r]=(c[x.r]||0)+1);const v=Object.values(c).sort((a,b)=>b-a);
+ if(v[0]===4)return 7;if(v[0]===3)return 3;if(v[0]===2&&v[1]===2)return 2;if(v[0]===2)return 1;return 0;}
+function computeOuts(hole,board){const used=new Set([...hole,...board].map(c=>c.r+c.s));const unseen=newDeck().filter(c=>!used.has(c.r+c.s));
+ const cur=catOf(hole.concat(board));const groups={};let n=0;
+ for(const c of unseen){const nb=board.concat([c]);const nc=catOf(hole.concat(nb));if(nc>cur&&nc>catOf(nb)){let k=CATNAMES[nc];if(nc===1&&cur===0)k='Pari (yliskortti/osuma)';(groups[k]=groups[k]||[]).push(c);n++;}}
+ const u=unseen.length,left=5-board.length;const next=n/u,river=left>=2?1-(1-n/u)*(1-n/(u-1)):next;
+ return {count:n,groups,unseen:u,cur:CATNAMES[cur],next,river,rule:left>=2?n*4:n*2,left};}
+if(typeof module!=='undefined')Object.assign(module.exports,{computeOuts,catOf});
+function profileOf(p,fallback){const s=p.st||{hands:0};const n=s.hands;let vp,pf,af;
+ if(n>=8){vp=s.vpip/n;pf=s.pfr/n;af=s.calls?s.aggr/s.calls:s.aggr;}
+ const loose=n>=8?vp>0.38:fallback==='loose',tight=n>=8?vp<0.24:fallback==='tight',aggr=n>=8?af>=2:fallback==='aggressive',passive=n>=8?af<1:fallback==='loose';
+ return {n,vp,pf,af,loose,tight,aggr,passive,label:(tight?'tiukka':loose?'löysä':'keskitaso')+'-'+(aggr?'aggressiivinen':passive?'passiivinen':'tasapainoinen'),data:n>=8};}
+function styleAdjust(adv,eq,ctx){// ctx:{toCall,pot,bb,street,curBet,minRaiseTo,stack,myBet,aggrProf,opps:[profiles],fair}
+ const notes=[];const po=adv.potOdds;const A=ctx.aggrProf;
+ if(ctx.toCall>0&&A){
+  if(A.aggr){if(adv.action==='fold'&&eq>=po-0.05){adv.action='call';notes.push(`Hyökkääjä on aggressiivinen ja panostaa usein heikolla – voit maksaa kevyemmin (equity riittää lähes kertoimiin).`);}
+   else if((adv.action==='raise')&&eq>0.65&&ctx.street!=='river'){adv.action='call';adv.amount=0;notes.push(`Vahva käsi aggressiivista vastaan: ansoita maksamalla ja anna hänen jatkaa panostamista.`);}
+   else notes.push('Aggressiivinen vastustaja: älä bluffaa häntä, hän maksaa ja korottaa usein.');}
+  else if(A.tight){if(adv.action==='call'&&eq<po+0.09){adv.action='fold';notes.push(`Tiukka pelaaja korottaa harvoin ilman vahvaa kättä – kunnioita panosta; todellinen equitysi on todennäköisesti laskettua pienempi.`);}
+   else notes.push('Tiukan pelaajan panos kertoo yleensä vahvasta kädestä – ole varovainen.');}}
+ if(ctx.toCall===0&&ctx.opps.length&&ctx.opps.every(o=>o.passive&&!o.tight)&&adv.action==='check'&&eq>=ctx.fair+0.03&&ctx.street!=='preflop'){
+  adv.action='bet';adv.amount=Math.max(ctx.minRaiseTo,Math.round(ctx.pot*0.5/ctx.bb)*ctx.bb);notes.push('Löysä-passiiviset vastustajat maksavat heikoilla käsillä – ohut arvopanos kannattaa. Älä bluffaa heitä.');}
+ if(ctx.street==='preflop'&&ctx.steal&&ctx.opps.length&&ctx.opps.every(o=>o.tight)&&(adv.action==='fold'||adv.action==='check'||adv.action==='call')&&eq>=ctx.fair-0.08){
+  adv.action='raise';adv.amount=Math.min(ctx.stack+ctx.myBet,Math.max(ctx.minRaiseTo,ctx.bb*2.5));notes.push('Jäljellä vain tiukkoja pelaajia ja potti korottamaton – varasta blindit korotuksella, he luovuttavat usein.');}
+ if(adv.amount>=ctx.stack+ctx.myBet&&adv.action!=='call')adv.action='allin';
+ adv.styleNotes=notes;return adv;}
+if(typeof module!=='undefined')Object.assign(module.exports,{profileOf,styleAdjust});
+const STYLES={tight:{name:'Tiukka',loose:-0.08,aggr:0.15,bluff:0.03},loose:{name:'Löysä',loose:0.12,aggr:0.2,bluff:0.08},aggressive:{name:'Aggressiivinen',loose:0.05,aggr:0.55,bluff:0.2}};
+class Game{
+ constructor(o){this.o=o;this.sched=o.sched||((f,ms)=>setTimeout(f,ms));this.sb=o.sb||10;this.bb=o.bb||20;this.dealer=-1;this.handNo=0;
+  const names=['Aino','Ville','Kaisa','Pekka','Liisa'],st=['tight','loose','aggressive','tight','aggressive'];
+  this.players=[{id:0,name:'Sinä',human:true,chips:o.stack||1000}];for(let i=0;i<o.nBots;i++)this.players.push({id:i+1,name:names[i],style:st[i],chips:o.stack||1000});
+  this.log=o.log||(()=>{});this.render=o.render||(()=>{});this.onUser=o.onUser||(()=>{});this.onHandEnd=o.onHandEnd||(()=>{});}
+ alive(){return this.players.filter(p=>p.chips>0);}
+ nextIdx(i,f){const n=this.players.length;for(let k=1;k<=n;k++){const j=(i+k)%n;if(f(this.players[j]))return j;}return -1;}
+ startHand(){const pl=this.players;if(pl[0].chips<=0||this.alive().length<2)return false;this.handNo++;
+  pl.forEach(p=>{p.hole=[];p.bet=0;p.totalBet=0;p.folded=p.chips<=0;p.st=p.st||{hands:0,vpip:0,pfr:0,aggr:0,calls:0};if(p.chips>0)p.st.hands++;p.fv=p.fp=false;p.out=p.chips<=0;p.allin=false;p.acted=false;p.lastAct='';});
+  this.dealer=this.nextIdx(this.dealer,p=>!p.out);this.deck=shuffle(newDeck());this.board=[];this.street='preflop';this.decisions=[];this.over=false;this.winners=[];this.lastAggr=null;
+  const inH=pl.filter(p=>!p.out);inH.forEach(p=>p.hole=[this.deck.pop(),this.deck.pop()]);
+  let sbI,bbI;if(inH.length===2){sbI=this.dealer;bbI=this.nextIdx(sbI,p=>!p.out);}else{sbI=this.nextIdx(this.dealer,p=>!p.out);bbI=this.nextIdx(sbI,p=>!p.out);}
+  this.sbI=sbI;this.bbI=bbI;this.post(pl[sbI],this.sb,'PB');this.post(pl[bbI],this.bb,'IB');this.curBet=this.bb;this.minRaise=this.bb;
+  this.log(`— Käsi #${this.handNo} — jakaja ${pl[this.dealer].name}`);this.turn=this.nextIdx(bbI,p=>!p.folded&&!p.allin);this.proceed();return true;}
+ post(p,a,l){a=Math.min(a,p.chips);p.chips-=a;p.bet+=a;p.totalBet+=a;if(p.chips===0)p.allin=true;p.lastAct=l+' '+a;}
+ pot(){return this.players.reduce((s,p)=>s+p.totalBet,0);}
+ toCall(p){return Math.min(this.curBet-p.bet,p.chips);}
+ act(p,action,to){if(this.over||this.players[this.turn]!==p)return;const call=this.toCall(p);
+  if(action==='check'&&call>0)action='call';
+  if(action==='fold'){p.folded=true;p.lastAct='Luovutus';}
+  else if(action==='check'){p.lastAct='Tarkistus';}
+  else if(action==='call'){this.post(p,call,'Maksu');if(call===0)p.lastAct='Tarkistus';}
+  else{ // bet/raise/allin: to = total bet level
+   let maxTo=p.bet+p.chips;if(action==='allin')to=maxTo;to=Math.min(Math.max(to,this.curBet+this.minRaise),maxTo);
+   if(to<=this.curBet){this.post(p,call,'Maksu');}else{const inc=to-this.curBet;const full=inc>=this.minRaise;const wasBet=this.curBet===0;
+    this.post(p,to-p.bet,p.chips===to-p.bet?'All-in':(wasBet?'Panostus':'Korotus'));if(p.allin)p.lastAct='All-in '+to;
+    if(full){this.minRaise=inc;this.players.forEach(q=>{if(q!==p)q.acted=false;});}this.curBet=to;}}
+  this.track(p,action,call);p.acted=true;this.log(`${p.name}: ${p.lastAct}`);this.advance();}
+ track(p,a,call){const s=p.st,ag=a==='bet'||a==='raise'||a==='allin',isC=a==='call'&&call>0;
+  if(ag&&p.lastAct.startsWith('Maksu')){if(call>0)s.calls++;}else if(ag){s.aggr++;this.lastAggr=p.id;}else if(isC)s.calls++;
+  if(this.street==='preflop'&&(ag||isC)){if(!p.fv){p.fv=true;s.vpip++;}if(ag&&!p.fp&&!p.lastAct.startsWith('Maksu')){p.fp=true;s.pfr++;}}}
+ advance(){const pl=this.players,live=pl.filter(p=>!p.folded);
+  if(live.length===1)return this.finish();
+  const canAct=live.filter(p=>!p.allin);const done=canAct.every(p=>p.acted&&p.bet===this.curBet);
+  if(done){return this.nextStreet();}
+  this.turn=this.nextIdx(this.turn,p=>!p.folded&&!p.allin&&(!p.acted||p.bet<this.curBet));this.proceed();}
+ nextStreet(){const pl=this.players;pl.forEach(p=>{p.bet=0;p.acted=false;});this.curBet=0;this.minRaise=this.bb;
+  if(this.street==='river')return this.finish();
+  const n={preflop:3,flop:1,turn:1}[this.street];this.street={preflop:'flop',flop:'turn',turn:'river'}[this.street];
+  for(let i=0;i<n;i++)this.board.push(this.deck.pop());this.log(`${{flop:'Flop',turn:'Turn',river:'River'}[this.street]}: ${this.board.map(cardStr).join(' ')}`);
+  const canAct=pl.filter(p=>!p.folded&&!p.allin);if(canAct.length<=1){this.render();return this.sched(()=>this.nextStreet(),this.o.delay??700);}
+  this.turn=this.nextIdx(this.dealer,p=>!p.folded&&!p.allin);this.proceed();}
+ proceed(){this.render();const p=this.players[this.turn];if(p.human)this.onUser(p);else this.sched(()=>this.botAct(p),this.o.delay??700);}
+ finish(){const pl=this.players,live=pl.filter(p=>!p.folded);this.over=true;const res=[];
+  if(live.length===1){const w=live[0];const a=this.pot();w.chips+=a;res.push(`${w.name} voittaa ${a} (muut luovuttivat)`);this.winners=[w.id];}
+  else{while(this.board.length<5)this.board.push(this.deck.pop());live.forEach(p=>p.score=evalBest(p.hole.concat(this.board)));
+   for(const pt of buildPots(pl)){const el=pt.eligible.map(i=>pl[i]);const best=Math.max(...el.map(p=>p.score));const ws=el.filter(p=>p.score===best);
+    const share=Math.floor(pt.amount/ws.length);let rem=pt.amount-share*ws.length;ws.forEach(w=>{w.chips+=share+(rem-->0?1:0);this.winners.push(w.id);});
+    res.push(`${ws.map(w=>w.name).join(' & ')} voittaa ${pt.amount} (${catName(best)})`);}}
+  res.forEach(r=>this.log(r));this.result=res;this.render();this.onHandEnd(this);}
+ botAct(p){const st=STYLES[p.style];const opp=this.players.filter(q=>!q.folded&&q!==p).length;
+  const eq=equity(p.hole,this.board,opp,250);const call=this.toCall(p),pot=this.pot();const po=call>0?call/(pot+call):0;
+  const fair=1/(opp+1),adj=eq+st.loose*(this.street==='preflop'?1:0.5),r=Math.random();
+  const raiseTo=f=>this.curBet+Math.max(this.minRaise,Math.round(f*(pot+call)/this.bb)*this.bb);
+  if(adj>fair*1.6+0.1-st.aggr*0.1||(r<st.bluff&&opp<=2)){if(r<st.aggr+0.3)return this.act(p,call===0?'bet':'raise',raiseTo(0.5+st.aggr*0.6+Math.random()*0.3));}
+  if(call===0)return this.act(p,(adj>fair+0.05&&r<st.aggr)?'bet':'check',raiseTo(0.5));
+  if(adj>=po+0.02-(call<=this.bb?0.08:0))return this.act(p,'call');return this.act(p,'fold');}
+}
+if(typeof module!=='undefined')module.exports={Game,STYLES};
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+var TUTQ={
+ ev:()=>{const P=R(4,20)*10,C=R(2,10)*10,e=R(15,60);const ev=e/100*(P+C)-C;return {q:`Potti on <b>${P}</b> (sis. vastustajan panos), maksu on <b>${C}</b> ja equitysi on <b>${e} %</b>. Mikä on maksun EV merkkeinä?`,ans:ev,tol:1.5,
+  sol:`EV = ${e} % × (${P} + ${C}) − ${C} = ${(e/100*(P+C)).toFixed(1)} − ${C} = <b>${ev.toFixed(1)}</b> → ${ev>=0?'+EV, maksu kannattaa':'−EV, luovuta'}.`};},
+ eqsim:()=>{const N=1000,W=R(150,700),T=R(0,60);const eq=(W+T/2)/N*100;return {q:`Simulaatio yhtä vastustajaa vastaan: <b>${W}</b> voittoa, <b>${T}</b> tasapeliä, ${N} simulaatiota. Mikä on equitysi (%)? (tasapeli = puolet potista)`,ans:eq,tol:0.6,
+  sol:`Equity = (${W} + ${T}/2) / ${N} = <b>${eq.toFixed(1)} %</b>.`};},
+ eqouts:()=>{const o=[4,8,9,12,15][R(0,4)],fl=Math.random()<.5;const ans=fl?o*4:o*2;return {q:`Sinulla on <b>${o}</b> outsia ${fl?'flopilla (kaksi korttia tulossa)':'turnilla (yksi kortti tulossa)'}. Arvioi osumistodennäköisyys (%) 2:n ja 4:n säännöllä.`,ans,tol:0.5,
+  sol:`${o} × ${fl?4:2} = <b>${ans} %</b>. (Tarkka: ${fl?(100*(1-(1-o/47)*(1-o/46))).toFixed(1):(100*o/46).toFixed(1)} %)`};},
+ po:()=>{const P=R(4,30)*10,C=R(2,12)*10;const p=C/(P+C)*100;return {q:`Potti on <b>${P}</b> ja sinun pitää maksaa <b>${C}</b>. Mikä on pottikerroin eli tarvittava equity (%)?`,ans:p,tol:0.6,
+  sol:`${C} / (${P} + ${C}) = <b>${p.toFixed(1)} %</b>, eli suhteena ${(P/C).toFixed(1)}:1.`};},
+ poratio:()=>{const C=R(1,5)*20,k=[1.5,2,2.5,3,4,5][R(0,5)],P=C*k;return {q:`Potti on <b>${P}</b> ja maksu <b>${C}</b>. Mikä on pottikerroin suhteena X:1? Anna X.`,ans:k,tol:0.05,
+  sol:`${P} / ${C} = <b>${k}:1</b> → tarvittava equity 1/(${k}+1) = ${(100/(k+1)).toFixed(1)} %.`};},
+ final:()=>{const P=R(5,25)*10,C=R(2,12)*10,e=R(15,55),po=C/(P+C)*100,ev=e/100*(P+C)-C;return {q:`Potti <b>${P}</b>, maksu <b>${C}</b>, equitysi <b>${e} %</b>. Onko maksu +EV?`,yn:true,ans:ev>=0?1:0,
+  sol:`Pottikerroin ${C}/(${P}+${C}) = ${po.toFixed(1)} %. Equity ${e} % ${e>=po?'≥':'<'} ${po.toFixed(1)} %. EV = ${e} % × ${P+C} − ${C} = <b>${ev.toFixed(1)}</b> → <b>${ev>=0?'Kyllä, +EV':'Ei, −EV'}</b>.`};},
+ finalOuts:()=>{const o=[8,9,12,15][R(0,3)],P=R(6,20)*10,C=R(2,10)*10,eq=o*2,po=C/(P+C)*100;return {q:`Turnilla sinulla on <b>${o}</b> outsia (vain river tulossa). Potti <b>${P}</b>, maksu <b>${C}</b>. Kannattaako maksaa pelkkien outsien perusteella?`,yn:true,ans:eq>=po?1:0,
+  sol:`Equity ≈ ${o} × 2 = ${eq} %. Pottikerroin ${po.toFixed(1)} %. ${eq>=po?'Equity ylittää kertoimen → <b>Kyllä</b>':'Equity jää alle kertoimen → <b>Ei</b>'}. EV ≈ ${(eq/100*(P+C)-C).toFixed(1)}.`};}};
+function checkAns(q,v){if(q.opts)return (+v)===q.ans;if(q.yn)return (+v)===q.ans;const x=parseFloat(String(v).replace(',','.'));return !isNaN(x)&&Math.abs(x-q.ans)<=q.tol;}
+var TUTS={
+ ev:{title:'EV eli odotusarvo',steps:[`<p><b>EV (expected value)</b> kertoo, paljonko päätös tuottaa keskimäärin, jos toistaisit sen lukemattomia kertoja.</p><p>Maksulle: <b>EV = equity × (potti + maksu) − maksu</b>. Potti sisältää jo vastustajan panoksen.</p><p>Yksittäinen käsi voi hävitä, mutta +EV-päätökset tuottavat voittoa pitkällä aikavälillä.</p>`,
+  `<p><b>Esimerkki:</b> Potti 100, maksu 50, equity 40 %.</p><p>EV = 0,40 × 150 − 50 = 60 − 50 = <b>+10</b>. Joka maksu tuottaa keskimäärin 10 merkkiä → maksa.</p><p>Jos equity olisi 25 %: 0,25 × 150 − 50 = <b>−12,5</b> → luovuta.</p>`],qs:['ev','ev','ev','final']},
+ equity:{title:'Equity',steps:[`<p><b>Equity</b> on se osuus potista, jonka voitat keskimäärin, jos käsi pelattaisiin loppuun monta kertaa. Tasapelissä potti jaetaan, joten tasapeli kahden kesken lasketaan puolikkaana voittona.</p><p>Peli laskee equityn <b>Monte Carlo -menetelmällä</b>: se jakaa satunnaiset kädet vastustajille ja loput pöytäkortit esim. 2000 kertaa ja laskee (voitot + jaetut osuudet) / simulaatiot.</p>`,
+  `<p><b>Esimerkki:</b> 1000 simulaatiota: 420 voittoa ja 40 tasapeliä → (420 + 40/2)/1000 = <b>44 %</b>.</p><p>Pöydässä arvioit equityä outseilla: flopilla outsit × 4, turnilla outsit × 2. Väriveto 9 outsia flopilla ≈ 36 %.</p><p>Muistisääntöjä: pari vs. kaksi yliskorttia ~55/45, dominoitu käsi (AK vs AQ) ~70/30, AA vs. satunnainen käsi ~85 %.</p>`],qs:['eqsim','eqouts','eqsim','eqouts']},
+ po:{title:'Pottikerroin',steps:[`<p><b>Pottikerroin</b> kertoo, montako prosenttia equityä tarvitset, jotta maksu kannattaa: <b>maksu / (potti + maksu)</b>.</p><p>Sama suhteena: <b>potti : maksu</b>. Esim. 3:1 → tarvitset 1/(3+1) = 25 %.</p>`,
+  `<p><b>Esimerkki:</b> Potti 150, maksu 50 → 50/200 = <b>25 %</b>, eli 3:1.</p><p>Jos equitysi on 30 % → maksu kannattaa. Jos 20 % → luovuta.</p>`],qs:['po','poratio','po','finalOuts']},
+ final:{title:'Loppukoe: EV + equity + pottikerroin',steps:[`<p>Yhdistä kaikki: laske pottikerroin, vertaa equityyn ja päättele EV. 5 kysymystä.</p>`],qs:['final','finalOuts','ev','po','final']}};
+let TS=null;
+function tutOpen(){document.getElementById('tutM').style.display='flex';tutMenu();}
+var tutMenu=function(){TS=null;document.getElementById('tutB').innerHTML='<h2>Tutoriaalit</h2>'+Object.entries(TUTS).map(([k,t])=>`<button class="tbtn" onclick="tutStart('${k}')">${t.title}</button>`).join('');}
+function tutStart(k){const t=TUTS[k];TS={k,i:0,items:t.steps.map(s=>({html:s})).concat(t.qs.map(g=>({q:TUTQ[g]()}))),ok:0,nq:t.qs.length};tutShow();}
+function tutShow(){const t=TUTS[TS.k],it=TS.items[TS.i],b=document.getElementById('tutB');let h=`<h2>${t.title}</h2><div class="prog">Vaihe ${TS.i+1}/${TS.items.length}</div>`;
+ if(it.html)h+=it.html+`<button class="tbtn" onclick="tutNext()">Seuraava ▶</button>`;
+ else{const q=it.q;h+=`<p>❓ ${q.q}</p>`+(q.opts?q.opts.map((o,i)=>`<button class="tbtn" onclick="tutAns(${i})">${o}</button>`).join('<br>'):q.yn?`<button class="tbtn" onclick="tutAns(1)">Kyllä</button><button class="tbtn" onclick="tutAns(0)">Ei</button>`:`<input id="tutIn" inputmode="decimal" style="font-size:18px;width:120px"> <button class="tbtn" onclick="tutAns(document.getElementById('tutIn').value)">Tarkista</button>`)+'<div id="tutF"></div>';}
+ b.innerHTML=h+`<p><a href="#" onclick="tutMenu();return false">← Valikkoon</a></p>`;}
+function tutAns(v){const it=TS.items[TS.i];if(it.done)return;it.done=true;if(it.q.opts)document.querySelectorAll('#tutB .tbtn').forEach((b,i)=>{if(i<it.q.opts.length)b.classList.add(i===it.q.ans?'right':(i===+v?'wrong':''))});const ok=checkAns(it.q,v);if(ok)TS.ok++;
+ document.getElementById('tutF').innerHTML=`<div class="${ok?'ok':'bad'}">${ok?'✅ Oikein!':'❌ Ei aivan.'} ${it.q.sol}</div><button class="tbtn" onclick="tutNext()">${TS.i+1<TS.items.length?'Seuraava ▶':'Valmis'}</button>`;}
+function tutNext(){TS.i++;if(TS.i>=TS.items.length){tutSave(TS.k,TS.ok,TS.nq);document.getElementById('tutB').innerHTML=`<h2>${TUTS[TS.k].title} – valmis!</h2><p>Oikein ${TS.ok}/${TS.nq}.</p><button class="tbtn" onclick="tutStart('${TS.k}')">Uudestaan (uudet luvut)</button> <button class="tbtn" onclick="tutMenu()">Valikkoon</button>`;return;}tutShow();}
+
+function shuf(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function mcq(q,opts,correct,sol){const o=opts.map((t,i)=>({t,c:i===correct}));shuf(o);return {q,opts:o.map(x=>x.t),ans:o.findIndex(x=>x.c),sol};}
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+const cs=cs2=>cs2.map(cardStr).join(' ');
+// preflop ranges: returns 0=EP ok,1=MP ok,2=LP ok,3=fold
+function handTier(r1,r2,s){const hi=Math.max(r1,r2),lo=Math.min(r1,r2);
+ if(hi===lo)return hi>=7?0:hi>=5?1:2;
+ if(hi===14){if(lo>=12)return 0;if(lo===11)return s?0:1;if(lo===10)return s?1:2;return s?2:3;}
+ if(hi===13){if(lo===12)return s?0:1;if(lo===11)return s?1:2;if(lo>=9)return s?2:3;return 3;}
+ if(hi===12){if(lo===11)return s?1:2;if(lo===10)return s?2:3;return 3;}
+ if(s&&hi-lo===1&&lo>=8)return 2;return 3;}
+const POSN=['aikainen positio (UTG)','keskiposition (MP)','myöhäinen positio (button)'];
+function handName(r1,r2,s){const R=r=>RANKS[r-2];const hi=Math.max(r1,r2),lo=Math.min(r1,r2);return R(hi)+R(lo)+(hi===lo?'':s?'s':'o');}
+Object.assign(TUTQ,{
+ rankcmp:()=>{let a=Math.floor(Math.random()*9),b;do b=Math.floor(Math.random()*9);while(b===a);return mcq(`Kumpi käsi on arvokkaampi?`,[CATNAMES[a],CATNAMES[b]],a>b?0:1,`Järjestys alhaalta ylös: ${CATNAMES.join(' < ')}. → <b>${CATNAMES[Math.max(a,b)]}</b>.`);},
+ preflop:()=>{const r1=2+Math.floor(Math.random()*13),r2=2+Math.floor(Math.random()*13),s=r1!==r2&&Math.random()<.4,p=Math.floor(Math.random()*3);const t=handTier(r1,r2,s);const ok=t<=p;
+  return {q:`Olet <b>${POSN[p]}</b>, kaikki ennen sinua luovuttivat. Kätesi: <b>${handName(r1,r2,s)}</b>. Avaatko korotuksella (yksinkertaisen oppaan rangen mukaan)?`,yn:true,ans:ok?1:0,
+   sol:`${handName(r1,r2,s)} kuuluu rangeen ${t===3?'<b>ei missään positiossa</b> (luovuta)':'alkaen positiosta: <b>'+POSN[t]+'</b>'} → <b>${ok?'Kyllä, korota':'Ei, luovuta'}</b>.`};},
+ posq:()=>pick([()=>mcq('Kuka toimii viimeisenä flopilla, turnilla ja riverillä?',['Button (jakaja)','Small blind','UTG (ensimmäinen blindien jälkeen)'],0,'<b>Button</b> toimii postflopissa viimeisenä – se näkee muiden toiminnan ensin.'),
+  ()=>mcq('Kuka toimii preflop ensimmäisenä (täydessä pöydässä)?',['UTG eli big blindistä vasemmalle','Button','Big blind'],0,'Preflop ensimmäisenä toimii <b>UTG</b>; blindit toimivat preflop viimeisinä.'),
+  ()=>mcq('Miksi myöhäisestä positiosta voi pelata enemmän käsiä?',['Saat enemmän tietoa ennen päätöstä ja hallitset potin kokoa','Kortit ovat siellä parempia','Blindit ovat pienemmät'],0,'Viimeisenä toimiva <b>näkee muiden ratkaisut</b>, voi varastaa blindejä ja hallita pottia.'),
+  ()=>mcq('Olet big blindissä ja flopilla toimit ensimmäisenä. Olet siis…',['Epäedullisessa positiossa (out of position)','Edullisessa positiossa (in position)','Positio ei vaikuta'],0,'Ensimmäisenä toimiva on <b>out of position</b> – vähemmän tietoa.')])(),
+ betsize:()=>{const P=R(4,30)*10,f=pick([0.33,0.5,0.66,0.75,1]);const ans=Math.round(P*f);return {q:`Potti on <b>${P}</b>. Paljonko on ${Math.round(f*100)} % potin panos?`,ans,tol:Math.max(1,P*0.02),sol:`${P} × ${f} ≈ <b>${ans}</b>.`};},
+ cbetbe:()=>{const P=R(4,20)*10,B=Math.round(P*pick([0.33,0.5,0.75,1]));const x=B/(P+B)*100;return {q:`Teet bluffi-c-betin <b>${B}</b> pottiin <b>${P}</b>. Kuinka usein (%) vastustajan pitää luovuttaa, jotta bluffi on tasan kannattava?`,ans:x,tol:0.8,sol:`Tarvittava luovutusprosentti = panos / (potti + panos) = ${B}/(${P}+${B}) = <b>${x.toFixed(1)} %</b>.`};},
+ cbetmc:()=>pick([()=>mcq('Mikä flop sopii parhaiten jatkopanokselle preflop-korottajana yhtä vastustajaa vastaan?',['A♠ 7♦ 2♣ (kuiva, ässä)','8♥ 9♥ T♦ (märkä, koordinoitu)','6♣ 6♦ 7♣ (keskikortit)'],0,'Kuivalla ässäflopilla korottajan range on vahvempi ja maksajalla harvoin osuma → <b>c-bet toimii</b>.'),
+  ()=>mcq('Miksi pieni (~1/3 potin) c-bet toimii kuivilla flopeilla?',['Se saa saman luovutusmäärän halvemmalla','Se näyttää heikolta','Se on pakollinen'],0,'Kuivalla flopilla vastustaja luovuttaa heikot kädet joka tapauksessa → <b>pieni panos riittää</b> ja riski pienenee.')])(),
+ foldeq:()=>{const P=R(4,20)*10,B=R(2,15)*10;const x=B/(P+B)*100;return {q:`Bluffaat riverillä <b>${B}</b> pottiin <b>${P}</b> (ei equityä, jos sinut maksetaan). Montako % vastustajan on luovutettava, jotta bluffi on 0-EV?`,ans:x,tol:0.8,sol:`${B}/(${P}+${B}) = <b>${x.toFixed(1)} %</b>. Jos hän luovuttaa useammin, bluffi on +EV.`};},
+ semimc:()=>pick([()=>mcq('Mikä on semibluffi?',['Panostus vedolla, jolla on sekä fold equity että mahdollisuus parantua','Bluffi riverillä ilman mitään','Pieni arvopanos'],0,'<b>Semibluffi</b> = veto (esim. väriveto) + panostus: voitat, kun vastustaja luovuttaa TAI kun osut.'),
+  ()=>mcq('Ketä vastaan bluffi toimii huonoiten?',['Löysä-passiivinen pelaaja, joka maksaa kaiken','Tiukka pelaaja','Pelaaja, jolla on pieni pino ja heikko käsi'],0,'"Calling station" <b>ei luovuta</b> → ei fold equityä.'),
+  ()=>mcq('Flopilla on sinulla värivetoa (9 outsia). Kumpi on yleensä parempi aggressiivisena?',['Semibluffi: panosta/korota','Odota riveriin ja bluffaa siellä','Luovuta aina'],0,'Flopilla <b>semibluffilla</b> on kaksi tapaa voittaa; riverillä vetoa ei enää ole.')])(),
+ implied:()=>{const o=pick([4,8,9]),P=R(4,15)*10,C=R(3,10)*10,e=o*2/100;const X=Math.max(0,C/e-P-C);return {q:`Turnilla sinulla on <b>${o}</b> outsia (≈${o*2} %). Potti <b>${P}</b>, maksu <b>${C}</b>. Paljonko sinun pitää keskimäärin voittaa <b>lisää riverillä</b> osuessasi, jotta maksu on tasan (implied odds)?`,ans:X,tol:Math.max(3,X*0.03),
+  sol:`Tasapaino: e × (potti + maksu + X) = maksu → X = maksu/e − potti − maksu = ${C}/${e.toFixed(2)} − ${P} − ${C} = <b>${Math.round(X)}</b>${X===0?' (pottikerroin riittää jo)':''}.`};},
+ implmc:()=>pick([()=>mcq('Mikä on reverse implied odds?',['Kun osut, mutta häviät silti ison potin paremmalle kädelle','Kun voitat lisää osumalla','Kun vastustaja luovuttaa'],0,'<b>Reverse implied odds</b>: esim. pieni väri tai heikko kicker – osuma voi maksaa paljon.'),
+  ()=>mcq('Millä kädellä on parhaat implied oddsit?',['Pieni taskupari (setin metsästys) syvillä pinoilla','KJo','A2o'],0,'<b>Pieni pari</b> osuu settiin harvoin (~12 %), mutta voittaa silloin usein ison potin.'),
+  ()=>mcq('Implied oddsit ovat suurimmat, kun…',['Pinot ovat syviä ja vastustaja maksaa paljon','Pinot ovat lyhyitä','Vastustaja on erittäin tiukka'],0,'Lisävoitot vaativat <b>syviä pinoja ja maksavan vastustajan</b>.')])(),
+ readst:()=>{const v=R(12,55),pf=Math.min(v,R(3,35)),af=+(Math.random()*4).toFixed(1);const L=v>30,A=af>=2;const opts=['Tiukka-aggressiivinen (TAG)','Löysä-aggressiivinen (LAG)','Tiukka-passiivinen','Löysä-passiivinen (calling station)'];const c=L?(A?1:3):(A?0:2);
+  return mcq(`Vastustajan tilastot: VPIP <b>${v} %</b>, PFR <b>${pf} %</b>, AF <b>${af}</b>. Mikä tyyli?`,opts,c,`VPIP ${v} % on ${L?'löysä (> 30 %)':'tiukka (≤ 30 %)'}, AF ${af} on ${A?'aggressiivinen (≥ 2)':'passiivinen (< 2)'} → <b>${opts[c]}</b>.`);},
+ exploit:()=>pick([()=>mcq('Vastustaja on löysä-passiivinen. Paras strategia?',['Ohuet arvopanokset, ei bluffeja','Paljon bluffeja','Pelaa vain ässillä'],0,'Hän maksaa heikoilla → <b>panosta arvosta, älä bluffaa</b>.'),
+  ()=>mcq('Tiukka pelaaja (VPIP 15 %) korottaa yhtäkkiä isosti riverillä. Mitä se yleensä tarkoittaa?',['Vahva käsi – luovuta keskivahvat kädet','Bluffi','Ei mitään'],0,'Tiukan pelaajan aggressio = <b>vahva range</b>. Kunnioita.'),
+  ()=>mcq('Aggressiivinen pelaaja (AF 4) panostaa jokaisella kadulla. Sinulla on keskivahva pari.',['Maksa kevyemmin – hänen rangessaan on paljon bluffeja','Luovuta aina','Bluffaa takaisin isosti'],0,'Korkea AF = paljon bluffeja → <b>maksa alas kevyemmin</b>, ansoita vahvoilla.')])(),
+ bankroll:()=>{const BI=pick([20,50,100,200,500,1000]),n=pick([20,30,40]);return {q:`Pelaat cash-peliä, jonka sisäänosto on <b>${BI}</b> pelimerkkiä. Paljonko pankkia tarvitset ${n} sisäänoston säännöllä?`,ans:BI*n,tol:0.5,sol:`${BI} × ${n} = <b>${BI*n}</b>.`};},
+ bankroll2:()=>{const B=R(10,100)*100,n=pick([20,25,40]);const a=B/n;return {q:`Pankkisi on <b>${B}</b>. Mikä on suurin sisäänosto ${n} sisäänoston säännöllä?`,ans:a,tol:0.6,sol:`${B} / ${n} = <b>${a}</b>.`};},
+ tilt:()=>pick([()=>mcq('Hävisit ison potin huonolla tuurilla ja haluat "voittaa sen heti takaisin". Mitä teet?',['Pidät tauon / lopetat session','Nostat panostasoa','Pelaat kaikki kädet'],0,'Tämä on <b>tiltiä</b>. Tauko suojaa pankkia ja päätöksentekoa.'),
+  ()=>mcq('Mikä on hyvä stop-loss-sääntö?',['Lopeta, kun olet hävinnyt esim. 3 sisäänostoa sessiossa','Älä koskaan lopeta tappiolla','Tuplaa panokset tappion jälkeen'],0,'<b>Etukäteen päätetty stop-loss</b> estää tiltin aiheuttamat suuret tappiot.'),
+  ()=>mcq('Miksi tulosta ei kannata arvioida yksittäisistä sessioista?',['Varianssi on suuri – arvioi päätösten laatua (EV)','Tulos on aina sattumaa','Sessiot ovat liian pitkiä'],0,'Lyhyellä aikavälillä tuuri dominoi → <b>arvioi päätöksiä, ei tuloksia</b>.')])()});
+TUTQ.winner=()=>{const d=shuffle(newDeck());const b=d.slice(0,5),A=d.slice(5,7),B=d.slice(7,9);const va=evalBest(A.concat(b)),vb=evalBest(B.concat(b));const c=va>vb?0:vb>va?1:2;
+ return mcq(`Pöytä: <b>${cs(b)}</b><br>Pelaaja A: <b>${cs(A)}</b> · Pelaaja B: <b>${cs(B)}</b><br>Kumpi voittaa?`,['Pelaaja A','Pelaaja B','Tasapeli (potti jaetaan)'],c,`A: ${catName(va)}, B: ${catName(vb)} → <b>${['A voittaa','B voittaa','tasapeli'][c]}</b>. Paras 5 kortin yhdistelmä 7 kortista ratkaisee; saman kategorian sisällä korkeammat kortit/kickerit.`);};
+const NEWT={
+ rules:{title:'Säännöt ja käsien arvojärjestys',steps:[`<p>Jokainen saa 2 omaa korttia, pöytään tulee 5 yhteistä (flop 3, turn 1, river 1). Panostuskierrokset: preflop, flop, turn, river. Paras <b>5 kortin</b> käsi 7 kortista voittaa.</p><p><b>Arvojärjestys</b> (heikoimmasta vahvimpaan): ${CATNAMES.join(' → ')}.</p>`,
+  `<p><b>Esimerkki:</b> Pöytä K♠ K♦ 7♣ 4♥ 2♠. A: A♣ Q♦, B: 7♥ 6♥.</p><p>A: pari kunkkuja + A Q 7 → pari. B: kaksi paria (KK 77) → <b>B voittaa</b>. Saman kategorian sisällä ratkaisevat korkeammat kortit (kicker).</p>`],qs:['rankcmp','winner','winner','rankcmp','winner']},
+ starting:{title:'Aloituskädet',steps:[`<p>Useimmat kädet kannattaa luovuttaa preflop. Mitä aikaisemmassa positiossa olet, sitä tiukemmin pelaat, koska perässä on enemmän pelaajia.</p><p><b>Yksinkertainen avausrange (6 pelaajaa, kukaan ei ole korottanut):</b><br>• <b>UTG:</b> 77+, AQ+, AJs, KQs<br>• <b>MP:</b> + 55–66, AJo, ATs, KQo, KJs, QJs<br>• <b>Button:</b> + kaikki parit, ATo, A2s–A9s, KJo, KTs–K9s, QJo, QTs, JTs, T9s, 98s</p><p>(s = samaa maata, o = eri maata)</p>`,
+  `<p><b>Esimerkki:</b> KJo UTG:ssä → luovuta, mutta buttonista → korota. 66 UTG:ssä → luovuta, MP:ssä → korota.</p>`],qs:['preflop','preflop','preflop','preflop','preflop']},
+ position:{title:'Positio',steps:[`<p><b>Positio</b> = järjestys, jossa toimit. Postflopissa <b>button toimii viimeisenä</b> – se on paras paikka, koska näet muiden ratkaisut ennen omaasi.</p><p>Edullisessa positiossa (in position) voit hallita potin kokoa, bluffata tehokkaammin ja saada lisää arvoa. Epäedullisessa (out of position) pelaa tiukemmin.</p>`,
+  `<p><b>Esimerkki:</b> Sinulla on veto buttonissa; vastustaja tarkistaa → voit tarkistaa perässä ja nähdä seuraavan kortin ilmaiseksi. Ensimmäisenä toimiessasi et voi taata tätä.</p>`],qs:['posq','posq','posq','posq']},
+ betsize:{title:'Panoskoot ja jatkopanos (c-bet)',steps:[`<p>Panoskoot mitoitetaan potin mukaan: tyypillisesti <b>1/3, 1/2, 2/3 tai täysi potti</b>. Preflop-avaus on yleensä 2–3 × BB.</p><p><b>Jatkopanos (c-bet)</b> = preflop-korottaja panostaa myös flopilla. Toimii erityisesti kuivilla flopeilla (esim. A-7-2 eri maata) ja yhtä vastustajaa vastaan.</p><p>Bluffi-c-betin tasapaino: vastustajan pitää luovuttaa <b>panos / (potti + panos)</b> ajasta.</p>`,
+  `<p><b>Esimerkki:</b> Potti 60, c-bet 1/3 potista = 20. Tarvittava luovutus: 20/(60+20) = <b>25 %</b>. Täyden potin panoksella (60): 60/120 = 50 %.</p>`],qs:['betsize','cbetbe','cbetmc','betsize','cbetbe']},
+ bluff:{title:'Bluffaaminen ja semibluffi',steps:[`<p><b>Fold equity</b> = arvo, jonka saat siitä, että vastustaja luovuttaa. Puhdas bluffi tarvitsee luovutusprosentin <b>panos / (potti + panos)</b>.</p><p><b>Semibluffi</b> = panostat vedolla (esim. väriveto): voitat heti, jos hän luovuttaa, ja muuten sinulla on vielä outsit. Siksi semibluffit ovat yleensä parempia kuin puhtaat bluffit.</p><p>Älä bluffaa pelaajia, jotka eivät luovuta.</p>`,
+  `<p><b>Esimerkki:</b> Bluffaat 50 pottiin 100 → tarvitset 50/150 = <b>33 %</b> luovutuksia. Semibluffina 9 outsilla saat lisäksi ~35 % equityn, kun sinut maksetaan.</p>`],qs:['foldeq','semimc','foldeq','semimc']},
+ implied:{title:'Implied odds ja reverse implied odds',steps:[`<p><b>Implied odds</b> = pottikerroin + tulevat voitot, jotka saat osuessasi. Maksu voi kannattaa, vaikka pelkkä pottikerroin ei riitä, jos voitat osuessasi tarpeeksi lisää.</p><p>Laskukaava: tarvittava lisävoitto <b>X = maksu / equity − potti − maksu</b>.</p><p><b>Reverse implied odds</b>: osut, mutta häviät silti ison potin (pieni väri, heikko kicker).</p>`,
+  `<p><b>Esimerkki:</b> 8 outsia turnilla (≈16 %). Potti 100, maksu 40: X = 40/0,16 − 100 − 40 = <b>110</b>. Jos voitat riverillä keskimäärin yli 110 lisää, maksu kannattaa.</p>`],qs:['implied','implmc','implied','implmc']},
+ reading:{title:'Vastustajien lukeminen',steps:[`<p><b>VPIP</b> = kuinka usein pelaaja laittaa rahaa pottiin preflop. <b>PFR</b> = kuinka usein hän korottaa preflop. <b>AF</b> = (panostukset + korotukset) / maksut.</p><p>Tyypit: <b>TAG</b> (tiukka-aggressiivinen), <b>LAG</b> (löysä-aggressiivinen), tiukka-passiivinen, <b>calling station</b> (löysä-passiivinen).</p><p><b>Hyödyntäminen:</b> station → arvopanokset, ei bluffeja. Tiukka → varasta blindit, kunnioita korotuksia. Aggressiivinen → maksa kevyemmin, ansoita.</p>`,
+  `<p><b>Esimerkki:</b> VPIP 48 %, PFR 6 %, AF 0,7 → löysä-passiivinen. Panosta keskivahvoilla käsillä arvosta, älä koskaan bluffaa häntä riverillä.</p>`],qs:['readst','exploit','readst','exploit','readst']},
+ bankroll:{title:'Pankinhallinta ja tilt',steps:[`<p><b>Pankinhallinta</b> suojaa varianssilta: pelaa vain tasoilla, joihin sinulla on riittävästi sisäänostoja (cash-pelissä usein 20–40).</p><p><b>Tilt</b> = tunnetila, jossa päätökset heikkenevät (esim. huonon tuurin jälkeen). Pidä taukoja, käytä stop-lossia ja arvioi päätöksiä, ei tuloksia.</p><p>(Tämä harjoituspeli käyttää vain pelimerkkejä – periaatteet pätevät silti.)</p>`,
+  `<p><b>Esimerkki:</b> Sisäänosto 100 ja 30 sisäänoston sääntö → pankki 3000. Jos pankki putoaa 2000:een, siirry tasolle, jonka sisäänosto on ≤ 66.</p>`],qs:['bankroll','bankroll2','tilt','tilt']}};
+Object.assign(TUTS,NEWT);
+const TUT_ORDER=['rules','starting','position','po','equity','ev','betsize','bluff','implied','reading','bankroll','final'];
+function tutProg(){try{return JSON.parse(localStorage.getItem('pt_tut')||'{}');}catch(e){return {};}}
+function tutSave(k,ok,n){try{const p=tutProg();const o=p[k]||{best:0};p[k]={done:true,best:Math.max(o.best,ok),n};localStorage.setItem('pt_tut',JSON.stringify(p));}catch(e){}}
+tutMenu=function(){TS=null;const p=tutProg();const next=TUT_ORDER.find(k=>!p[k]);const done=TUT_ORDER.filter(k=>p[k]).length;
+ document.getElementById('tutB').innerHTML=`<h2>Tutoriaalit</h2><p class="prog">Suositeltu oppimispolku aloittelijasta edistyneeseen · suoritettu ${done}/${TUT_ORDER.length}</p><div class="pbar"><i style="width:${100*done/TUT_ORDER.length}%"></i></div><ol class="tlist">`+
+ TUT_ORDER.map((k,i)=>{const t=TUTS[k],r=p[k];return `<li class="${k===next?'nxt':''}"><button class="tbtn" onclick="tutStart('${k}')">${r?'✅':k===next?'▶':'○'} ${i+1}. ${t.title}</button>${r?` <small>paras ${r.best}/${r.n}</small>`:k===next?' <small>seuraavaksi</small>':''}</li>`;}).join('')+
+ `</ol><button class="tbtn" onclick="try{localStorage.removeItem('pt_tut')}catch(e){};tutMenu()" style="font-size:12px">Nollaa edistyminen</button>`;};
+if(typeof module!=='undefined')module.exports={TUT_ORDER,handTier,mcq};
+const $=id=>document.getElementById(id);let G,stats={hands:0,dec:0,match:0,start:0},pending=null,curAdvice=null;
+const ACTFI={fold:'Luovuta',check:'Tarkista',call:'Maksa',bet:'Panosta',raise:'Korota',allin:'All-in'};
+function grp(a){return (a==='bet'||a==='raise'||a==='allin')?'aggr':a;}
+const SEEN=new Set(),SHOWN=new Set();
+function cardHTML(c,hide,key){if(hide||!c){return `<div class="card back ${key&&!SEEN.has(key)?'deal':''}"></div>`+(key?(SEEN.add(key),''):'');}
+ const red=c.s==='h'||c.s==='d',r=c.r===10?'10':RANKS[c.r-2],s=SUITSYM[c.s];let cls='';if(key){if(!SEEN.has(key))cls='deal';else if(!SHOWN.has(key))cls='flip';SEEN.add(key);SHOWN.add(key);}
+ return `<div class="card ${red?'red':'blk'} ${cls}"><span class="ci">${r}<br>${s}</span><span class="cc">${s}</span><span class="ci br">${r}<br>${s}</span></div>`;}
+function chipsHTML(a){if(!a)return '';const cols=a>=500?['#222','#7b2cbf']:a>=100?['#111','#222']:a>=25?['#1b7f3b','#2e9e52']:['#c62828','#e53935'];const n=Math.min(5,1+Math.floor(Math.log10(a+1)*1.5));
+ let h='<div class="stack">';for(let i=0;i<n;i++)h+=`<i style="bottom:${i*3}px;background:${i%2?cols[1]:cols[0]}"></i>`;return h+`</div><span class="amt">${a}</span>`;}
+function seatPos(i,n){const ang=Math.PI/2+i*2*Math.PI/n;const m=window.innerWidth<650,rx=m?36:44;return {x:50+rx*Math.cos(ang),y:50+41*Math.sin(ang),bx:50+(m?17:27)*Math.cos(ang),by:50+(m?14:24)*Math.sin(ang)};}
+function render(){const g=G;if(!g)return;const show=g.over&&g.players.filter(p=>!p.folded).length>1,n=g.players.length;
+ $('seats').innerHTML=g.players.map((p,i)=>{const P=seatPos(i,n);const act=g.turn===i&&!g.over;const hk=g.handNo+'-'+i+'-';
+  const cards=p.out?'':(p.hole||[]).map((c,j)=>cardHTML(c,!p.human&&!(show&&!p.folded),hk+j)).join('');
+  const mark=i===g.dealer?'<b class="btnD">D</b>':'';const bl=!g.over&&g.street==='preflop'?(i===g.sbI?'<b class="blind">SB</b>':i===g.bbI?'<b class="blind bb">BB</b>':''):'';
+  return `<div class="seat ${p.folded?'folded':''} ${p.out?'out':''} ${act?'turn':''} ${g.over&&g.winners.includes(p.id)?'win':''} ${p.human?'me':''}" style="left:${P.x}%;top:${P.y}%">
+  <div class="hole">${cards}</div><div class="plate"><div class="av" style="--c:${['#4a90d9','#e57373','#81c784','#ffb74d','#ba68c8','#4dd0e1'][i]}">${act?'<svg class="ring" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18"/></svg>':''}${p.human?'🙂':p.name[0]}</div>
+  <div class="info"><div class="nm">${p.name}${p.style?` <small>${STYLES[p.style].name}</small>`:''}</div><div class="ch">${p.out?'Pudonnut':p.chips}</div></div>${mark}${bl}</div>
+  ${oppStats(p)}<div class="la">${p.lastAct||''}${show&&p.score&&!p.folded?' · '+catName(p.score):''}</div></div>
+  <div class="bet" style="left:${P.bx}%;top:${P.by}%">${chipsHTML(p.bet)}</div>`;}).join('');
+ $('board').innerHTML=[0,1,2,3,4].map(k=>g.board[k]?cardHTML(g.board[k],false,g.handNo+'-b'+k):'<div class="card slot"></div>').join('');
+ const potBets=g.players.reduce((s,p)=>s+p.totalBet-p.bet,0);$('pot').innerHTML=(potBets?chipsHTML(potBets):'')+`<div class="potl">Potti: ${g.pot()}</div>`;
+ $('stats').innerHTML=`Kädet <b>${stats.hands}</b> · Pino <b>${g.players[0].chips}</b> (${g.players[0].chips-stats.start>=0?'+':''}${g.players[0].chips-stats.start}) · Päätökset <b>${stats.dec}</b> · Valmentajan mukaisia <b>${stats.dec?Math.round(100*stats.match/stats.dec):0} %</b>`;}
+function log(t){const d=$('log');d.innerHTML+=t+'<br>';d.scrollTop=1e9;}
+function onUser(p){const g=G;const opp=g.players.filter(q=>!q.folded&&q!==p).length;const tc=g.toCall(p);
+ $('controls').classList.remove('off');openPanel('coach');$('bCheck').textContent=tc>0?`Maksa ${tc}`:'Tarkista';
+ const minTo=Math.min(g.curBet+g.minRaise,p.chips+p.bet),maxTo=p.chips+p.bet;const r=$('amt');r.min=minTo;r.max=maxTo;r.step=g.bb/2;r.value=minTo;$('amtN').value=minTo;
+ $('bRaise').disabled=maxTo<=g.curBet;$('bRaise').textContent=g.curBet>0?'Korota':'Panosta';
+ $('coach').innerHTML='Valmentaja laskee…';setTimeout(()=>{const eq=equity(p.hole,g.board,opp,2000);
+  const adv=coachAdvice(eq,tc,g.pot(),p.chips,g.bb,opp,g.street,minTo,g.curBet,p.bet);adv.eq=eq;adv.sim=Object.assign({},equity.last);const P=q=>profileOf(q,q.style);const opps=g.players.filter(q=>!q.folded&&q!==p);
+  const la=g.lastAggr!=null&&g.lastAggr!==0?g.players[g.lastAggr]:null;const steal=g.curBet===g.bb&&g.players.every(q=>q.human||q.bet<=g.bb)&&g.nextIdx(g.turn,q=>!q.folded&&!q.allin&&!q.human&&q.bet<g.bb)!==-1&&opps.length<=3;
+  styleAdjust(adv,eq,{toCall:tc,pot:g.pot(),bb:g.bb,street:g.street,curBet:g.curBet,minRaiseTo:minTo,stack:p.chips,myBet:p.bet,aggrProf:la&&!la.folded?P(la):null,aggrName:la?la.name:'',opps:opps.map(P),fair:1/(opp+1),steal});
+  adv.ctx={tc,pot:g.pot(),hole:p.hole,board:g.board.slice(),aggrName:la&&!la.folded?la.name:''};curAdvice=adv;
+  if($('hints').checked)$('coach').innerHTML=adviceHTML(adv,opp);else $('coach').innerHTML='<i>Vihjeet piilossa – palaute käden jälkeen.</i>';},20);}
+function advText(a){return ACTFI[a.action]+(a.amount&&grp(a.action)==='aggr'?' '+a.amount:'');}
+function adviceHTML(a,opp){const c=a.ctx;let h=`<b>Equity:</b> ${pc(a.eq)} vs ${opp} vastustaja${opp>1?'a':''} · <b>Pottikertoimet:</b> ${a.potOdds?pc(a.potOdds):'—'}<br><small>Equity = (${a.sim.wins} voittoa + ${a.sim.ties} tasapeliä jaettuna osuuksiin) / ${a.sim.n} simulaatiota = ${(a.eq*100).toFixed(1)} %</small><br><b>Suositus: ${advText(a)}</b><br>${a.why}`;
+ if(a.styleNotes&&a.styleNotes.length)h+=`<div class="sub">🎭 <b>Vastustajan tyyli${c.aggrName?' ('+c.aggrName+')':''}:</b> ${a.styleNotes.join(' ')}</div>`;
+ if(c.tc>0){const ratio=(c.pot/c.tc).toFixed(1),ev=a.eq*(c.pot+c.tc)-c.tc;
+  h+=`<div class="sub">➗ <b>Pottikerroin:</b> ${c.tc} / (${c.pot} + ${c.tc}) = <b>${pc(a.potOdds)}</b> eli ${ratio}:1. Tarvitset vähintään ${pc(a.potOdds)} equityn, sinulla on ${pc(a.eq)} → ${a.eq>=a.potOdds?'maksu on pitkällä aikavälillä <b>voitollinen</b>':'maksu on pitkällä aikavälillä <b>tappiollinen</b>'}.<br>
+  EV-esimerkki: maksat ${c.tc} ja voitat ${c.pot+c.tc} (koko potti) ${pc(a.eq)} ajasta: EV ≈ ${pc(a.eq)} × ${c.pot+c.tc} − ${c.tc} = <b>${ev>=0?'+':''}${Math.round(ev)}</b> merkkiä per maksu. 100 samanlaisessa tilanteessa se tekee n. ${ev>=0?'+':''}${Math.round(ev*100)}.</div>`;}
+ if(c.board.length===3||c.board.length===4){const o=computeOuts(c.hole,c.board);
+  h+=`<div class="sub">🎯 <b>Outsit: ${o.count}</b> (nyt: ${o.cur})`+(o.count?'<br>'+Object.entries(o.groups).map(([k,v])=>`${k} (${v.length}): ${v.map(cardStr).join(' ')}`).join('<br>'):' – ei parantavia kortteja.')+
+  `<br>Sääntö ${o.left>=2?'4 (flopilta riveriin)':'2 (seuraava kortti)'}: ${o.count} × ${o.left>=2?4:2} ≈ <b>${o.rule}%</b>. Tarkka: seuraava kortti ${pc(o.next)}${o.left>=2?`, riveriin mennessä ${pc(o.river)}`:''}.`+
+  (c.tc>0?`<br>Vertailu: seuraavan kortin osumistodennäköisyys ${pc(o.next)} vs pottikerroin ${pc(a.potOdds)} → ${o.next>=a.potOdds?'pelkät outsit riittävät maksuun':'pelkät outsit eivät yksin riitä (huomioi mahdolliset tulevat voitot ja nykyinen käsi)'}.`:'')+`</div>`;}
+ return h;}
+function oppStats(p){if(!p.st||p.human)return '';const s=p.st,n=s.hands;if(!n)return '';const af=s.calls?(s.aggr/s.calls).toFixed(1):(s.aggr?'∞':'0');const pr=profileOf(p,p.style);
+ return `<div class="ost" title="VPIP = vapaaehtoisesti pottiin preflop, PFR = preflop-korotus, AF = aggressiokerroin (panostukset+korotukset / maksut). ${pr.data?'Arvio havaintojen perusteella':'Vähän dataa (<8 kättä)'}"><span>VPIP ${Math.round(100*s.vpip/n)}</span><span>PFR ${Math.round(100*s.pfr/n)}</span><span>AF ${af}</span>${pr.data?'<span class="lbl">'+pr.label+'</span>':''}</div>`;}
+function userAct(action){const g=G,p=g.players[0];if(g.over||g.players[g.turn]!==p||!curAdvice)return;let to=+$('amtN').value;
+ if(action==='check'&&g.toCall(p)>0)action='call';if(action==='raise'&&to>=p.chips+p.bet)action='allin';if(action==='raise'&&g.curBet===0)action='bet';
+ const a=curAdvice;curAdvice=null;const m=grp(a.action)===grp(action);stats.dec++;if(m)stats.match++;
+ g.decisions.push({street:g.street,board:g.board.slice(),eq:a.eq,po:a.potOdds,adv:a,user:ACTFI[action]+(grp(action)==='aggr'?' '+(action==='allin'?p.chips+p.bet:to):''),m});
+ $('controls').classList.add('off');$('coach').innerHTML='';g.act(p,action,to);}
+function onHandEnd(g){stats.hands++;const sn={preflop:'Preflop',flop:'Flop',turn:'Turn',river:'River'};
+ $('review').innerHTML='<h3>Käden arvio</h3>'+(g.decisions.length?g.decisions.map(d=>`<div class="${d.m?'ok':'bad'}">${d.m?'✅':'⚠️'} <b>${sn[d.street]}</b> ${d.board.map(cardStr).join(' ')} – Sinä: <b>${d.user}</b>, valmentaja: <b>${advText(d.adv)}</b><br><small>${d.adv.why}</small></div>`).join(''):'<i>Ei päätöksiä tässä kädessä.</i>')+'<p>'+g.result.join('<br>')+'</p>';
+ render();$('next').disabled=false;openPanel('review');if(g.players[0].chips<=0)$('review').innerHTML+='<p><b>Pelimerkit loppuivat – aloita uusi sessio.</b></p>';else if(g.alive().length<2)$('review').innerHTML+='<p><b>Voitit kaikki pelimerkit! 🎉</b></p>';}
+function newSession(){const n=+$('nb').value;G=new Game({nBots:n,stack:1000,sb:10,bb:20,delay:+$('spd').value,log,render,onUser,onHandEnd});stats={hands:0,dec:0,match:0,start:1000};$('log').innerHTML='';$('review').innerHTML='';nextHand();}
+function nextHand(){$('next').disabled=true;$('review').innerHTML='';$('coach').innerHTML='';if(!G.startHand())$('next').disabled=false;}
+function openPanel(t){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('.pane').forEach(p=>p.style.display=p.id==='p-'+t?'block':'none');}
+window.onload=()=>{document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>openPanel(b.dataset.t));$('togP').onclick=()=>document.body.classList.toggle('noside');$('tutBtn').onclick=tutOpen;$('tutX').onclick=()=>$('tutM').style.display='none';openPanel('coach');$('bFold').onclick=()=>userAct('fold');$('bCheck').onclick=()=>userAct('check');$('bRaise').onclick=()=>userAct('raise');$('bAll').onclick=()=>userAct('allin');
+ $('amt').oninput=()=>$('amtN').value=$('amt').value;$('amtN').oninput=()=>$('amt').value=$('amtN').value;
+ document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{const g=G,p=g.players[0];const tc=g.toCall(p);let v=g.curBet+Math.round(+b.dataset.f*(g.pot()+tc)/g.bb)*g.bb;v=Math.max(+$('amt').min,Math.min(+$('amt').max,v));$('amt').value=$('amtN').value=v;});
+ $('hints').onchange=()=>{if(curAdvice&&$('hints').checked)$('coach').innerHTML=adviceHTML(curAdvice,G.players.filter(q=>!q.folded&&q!==G.players[0]).length);};
+ $('spd').onchange=()=>{if(G)G.o.delay=+$('spd').value;};$('next').onclick=nextHand;$('new').onclick=newSession;newSession();
+ const hs=location.hash;if(hs.startsWith('#tut')){tutOpen();const k=hs.slice(5).replace(/q$/,'');if(TUTS[k]){tutStart(k);if(hs.endsWith('q')){TS.i=TS.items.findIndex(x=>x.q);tutShow();}}}};
+</script></body></html>

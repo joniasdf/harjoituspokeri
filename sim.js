@@ -1,0 +1,6 @@
+const vm=require('vm'),fs=require('fs');const ctx={console,setTimeout};vm.createContext(ctx);
+vm.runInContext(fs.readFileSync('logic.js','utf8')+fs.readFileSync('engine.js','utf8')+`
+const q=[];let g;g=new Game({nBots:5,delay:0,sched:f=>q.push(f),onUser:p=>q.push(()=>{const tc=g.toCall(p);const a=coachAdvice(equity(p.hole,g.board,g.players.filter(x=>!x.folded&&x!==p).length,100),tc,g.pot(),p.chips,g.bb,2,g.street,g.curBet+g.minRaise,g.curBet,p.bet);const o=g.players.filter(x=>!x.folded&&x!==p).map(x=>profileOf(x,x.style));styleAdjust(a,0.4,{toCall:tc,pot:g.pot(),bb:g.bb,street:g.street,curBet:g.curBet,minRaiseTo:g.curBet+g.minRaise,stack:p.chips,myBet:p.bet,aggrProf:g.lastAggr?profileOf(g.players[g.lastAggr]):null,opps:o,fair:0.3,steal:true});if(g.board.length>2&&g.board.length<5)computeOuts(p.hole,g.board);g.act(p,a.action,a.amount);})});
+let hands=0;for(let k=0;k<60;k++){if(!g.startHand())break;let n=0,t0=Date.now();while(q.length&&n++<500)q.shift()();if(n>=500)throw 'loop>500 actions';const dt=Date.now()-t0;if(dt>3000)console.log('slow hand',dt,'ms',n,'steps');if(!g.over)throw 'stuck';hands++;
+ const tot=g.players.reduce((s,p)=>s+p.chips,0);if(tot!==6000)throw 'chips '+tot;if(g.players.some(p=>p.chips<0))throw 'neg';}
+console.log('hands',hands,g.players.map(p=>p.name+':'+p.chips).join(' '));`,ctx);
